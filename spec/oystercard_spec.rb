@@ -30,8 +30,14 @@ describe Oystercard do
   describe '#touch_in' do
 
       it 'changes the status of the card to in use' do
+        subject.top_up(Oystercard::MAXIMUM_BALANCE)
         subject.touch_in
         expect(subject).to be_in_journey
+      end
+
+      it 'raises an error if there are insufficient funds on the card' do
+        subject = Oystercard.new(Oystercard::MINIMUM_FARE - 1)
+        expect{subject.touch_in}.to raise_error "Insufficient funds"
       end
 
   end
@@ -39,13 +45,14 @@ describe Oystercard do
   describe '#touch_out' do
 
     it 'changes the status of the card to not in use' do
+        subject.top_up(Oystercard::MAXIMUM_BALANCE)
         subject.touch_in
         subject.touch_out
         expect(subject).not_to be_in_journey
     end
 
   end
-  #
+
   # describe '#in_journey?' do
   #
   #   it 'checks the status of the oystercard after it has been touched in' do
