@@ -2,6 +2,8 @@ require 'oystercard'
 
 describe Oystercard do
 
+let (:station) {double :station, :name => "Shoreditch"}
+
   it 'has a default balance of zero' do
     expect(Oystercard::DEFAULT_BALANCE).to eq(0)
   end
@@ -16,14 +18,6 @@ describe Oystercard do
     it 'can top up the balance' do
       expect { subject.top_up 1 }.to change { subject.balance }.by 1
     end
-  end
-
-  describe '#deduct a fare' do
-
-    it 'can deduct value from fare' do
-      subject.top_up(20)
-      expect {subject.deduct 1 }.to change {subject.balance}.by -1
-    end
 
   end
 
@@ -31,41 +25,43 @@ describe Oystercard do
 
       it 'changes the status of the card to in use' do
         subject.top_up(Oystercard::MAXIMUM_BALANCE)
-        subject.touch_in
+        subject.touch_in(station)
         expect(subject).to be_in_journey
       end
 
       it 'raises an error if there are insufficient funds on the card' do
         subject = Oystercard.new(Oystercard::MINIMUM_FARE - 1)
-        expect{subject.touch_in}.to raise_error "Insufficient funds"
+        expect{subject.touch_in(station)}.to raise_error "Insufficient funds"
       end
 
+      it 'saves the station that the card touch in at' do
+        subject.top_up(Oystercard::MAXIMUM_BALANCE)
+        subject.touch_in(station)
+        expect(subject.entry_station).to eq station.name
+      end
   end
 
   describe '#touch_out' do
 
     it 'changes the status of the card to not in use' do
         subject.top_up(Oystercard::MAXIMUM_BALANCE)
-        subject.touch_in
+        subject.touch_in(station)
         subject.touch_out
         expect(subject).not_to be_in_journey
     end
 
-  end
+    it 'changes the balance of Oystercard by the minimum fare' do
+      subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      subject.touch_in(station)
+      expect { subject.touch_out }.to change { subject.balance }.by(- Oystercard::MINIMUM_FARE)
+    end
 
-  # describe '#in_journey?' do
-  #
-  #   it 'checks the status of the oystercard after it has been touched in' do
-  #       subject.touch_in
-  #       expect(subject.in_journey?).to be true
-  #   end
-  #
-  #   it 'checks the status of the oystercard after it has been touched out' do
-  #     subject.touch_in
-  #     subject.touch_out
-  #     expect(subject.in_journey?).to be false
-  #   end
-  #
-  # end
+    it 'forgets the station that the card touch in at when you touch out' do
+      subject.top_up(Oystercard::MAXIMUM_BALANCE)
+      subject.touch_in(station)
+      subject.touch_out
+      expect(subject.entry_station).to eq nil
+    end
+  end
 
 end
