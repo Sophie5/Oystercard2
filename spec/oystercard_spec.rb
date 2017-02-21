@@ -27,5 +27,38 @@ describe Oystercard do
 
   end
 
+  describe '#touch_in' do
+
+      it 'changes the status of the card to in use' do
+        subject.touch_in
+        expect(subject).to be_in_journey
+      end
+
+  end
+
+  describe '#touch_out' do
+
+    it 'changes the status of the card to not in use' do
+        subject.touch_in
+        subject.touch_out
+        expect(subject).not_to be_in_journey
+    end
+
+  end
+  #
+  # describe '#in_journey?' do
+  #
+  #   it 'checks the status of the oystercard after it has been touched in' do
+  #       subject.touch_in
+  #       expect(subject.in_journey?).to be true
+  #   end
+  #
+  #   it 'checks the status of the oystercard after it has been touched out' do
+  #     subject.touch_in
+  #     subject.touch_out
+  #     expect(subject.in_journey?).to be false
+  #   end
+  #
+  # end
 
 end
