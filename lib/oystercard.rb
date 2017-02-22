@@ -1,4 +1,5 @@
 require_relative 'station'
+require_relative 'journey'
 
 class Oystercard
 
@@ -6,12 +7,11 @@ class Oystercard
   MAXIMUM_BALANCE=90
   MINIMUM_FARE=1
 
-  attr_reader :balance, :entry_station, :exit_station, :journey_history
+  attr_reader :balance, :journey_history, :current_journey
 
   def initialize(set_balance = DEFAULT_BALANCE)
     @balance = set_balance
-    @entry_station = nil
-    @exit_station = nil
+    @current_journey = Journey.new
     @journey_history = []
   end
 
@@ -22,19 +22,14 @@ class Oystercard
 
   def touch_in(station)
     raise "Insufficient funds" if @balance < MINIMUM_FARE
-    @entry_station = station.name
-    @exit_station = nil
+    fare("entry")
+    @current_journey.set_entry_station(station)
   end
 
   def touch_out(station)
-    deduct(MINIMUM_FARE)
-    @exit_station = station.name
+    fare("exit")
+    @current_journey.set_exit_station(station)
     save_journey
-    @entry_station = nil
-  end
-
-  def in_journey?
-    !!entry_station
   end
 
   private
@@ -44,9 +39,23 @@ class Oystercard
   end
 
   def save_journey
-    recent_journey = Hash.new
-    recent_journey = {"Entry Station: " => @entry_station, "Exit Station: " => @exit_station}
-    @journey_history << recent_journey
+    @journey_history << @current_journey
+    @current_journey = Journey.new
   end
 
+  def fare(when_called)
+    if when_called == "entry" ? check_if_card_touched_out_last_journey : check_if_there_is_an_entry_station
+    end
+  end
+
+  def check_if_there_is_an_entry_station
+     if !!@current_journey.entry_station ? deduct(MINIMUM_FARE) : @balance -= 6
+     end
+  end
+
+  def check_if_card_touched_out_last_journey
+    if @current_journey.entry_station != nil
+      @balance -= 6
+    end
+  end
 end
