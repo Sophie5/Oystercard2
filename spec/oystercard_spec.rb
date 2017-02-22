@@ -9,7 +9,7 @@ describe Oystercard do
     journey = Journey.new
     journey.set_entry_station(station)
     journey.set_exit_station(station2)
-    subject.journey_history << journey
+    subject.journey_history.save(journey)
     subject.top_up(Oystercard::MAXIMUM_BALANCE)
   end
 
@@ -19,7 +19,7 @@ describe Oystercard do
 
   describe '#top_up' do
 
-    it 'has a limit' do
+    it 'has a limit', :tag do
       expect { subject.top_up 1 }.to raise_error "Failed! Your card limit is #{Oystercard::MAXIMUM_BALANCE}."
     end
 
@@ -65,7 +65,7 @@ describe Oystercard do
     it 'saves the station that the card touches out at ' do
       subject.touch_in(station)
       subject.touch_out(station2)
-      expect(subject.journey_history[0].exit_station).to eq station2
+      expect(subject.journey_history.journeys[0].exit_station).to eq station2
     end
 
     it 'saves recent journey into a journey history array' do
@@ -73,7 +73,7 @@ describe Oystercard do
       journey = subject.current_journey
       subject.touch_out(station2)
       journey.set_exit_station(station2)
-      expect(subject.journey_history[1]).to eq journey
+      expect(subject.journey_history.journeys[1]).to eq journey
     end
   end
 

@@ -1,5 +1,6 @@
 require_relative 'station'
 require_relative 'journey'
+require_relative 'journey_log'
 
 class Oystercard
 
@@ -12,7 +13,7 @@ class Oystercard
   def initialize(set_balance = DEFAULT_BALANCE)
     @balance = set_balance
     @current_journey = Journey.new
-    @journey_history = []
+    @journey_history = JourneyLog.new
   end
 
   def top_up(amount)
@@ -39,7 +40,8 @@ class Oystercard
   end
 
   def save_journey
-    @journey_history << @current_journey
+    @journey_history.save(@current_journey)
+    # @journey_history << @current_journey
     @current_journey = Journey.new
   end
 
